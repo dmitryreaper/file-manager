@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Images/App.ico</file>
+        <file>Images/DetailView.ico</file>
+        <file>Images/IconView.ico</file>
+        <file>Images/About.ico</file>
+        <file>Images/Delete.ico</file>
+        <file>Images/NewFolder.ico</file>
+        <file>Images/Properties.ico</file>
+        <file>Images/Preferences.ico</file>
+        <file>Images/Cut.png</file>
+        <file>Images/Copy.png</file>
+        <file>Images/Paste.png</file>
+        <file>Images/New.png</file>
+        <file>Images/Exit.png</file>
+        <file>Images/file.ico</file>
+    </qresource>
+</RCC>
