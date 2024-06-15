@@ -14,5 +14,6 @@
         <file>Images/New.png</file>
         <file>Images/Exit.png</file>
         <file>Images/file.ico</file>
+	<file>Images/help.ico</file>
     </qresource>
 </RCC>
