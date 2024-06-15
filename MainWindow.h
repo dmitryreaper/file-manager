@@ -73,6 +73,7 @@ private:
     QAction* hiddenAction;
     QActionGroup* viewActionGroup;
     QAction* aboutAction;
+    QAction* aboutHelpAction;
     QAction* propertiesAction;
     QSplitter* splitter;
     QItemSelectionModel* treeSelectionModel;
@@ -91,6 +92,7 @@ private slots:
     void del();
     void newFolder();
     void showAboutBox();
+    void showHelpBox();
     void showPreferences();
     void focusChangedSlot(QWidget *, QWidget *now);
     void toggleToDetailView();
