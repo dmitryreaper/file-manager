@@ -299,12 +299,12 @@ void MainWindow::createActionsAndMenus()
     viewActionGroup->addAction(detailViewAction);
     viewActionGroup->addAction(iconViewAction);
 
-    aboutAction = new QAction(QIcon::fromTheme("help-about", QIcon(":/Images/About.ico")), tr("&О приложении"), this );
-    aboutAction->setStatusTip(tr("О FILE-MANAGER"));
+    aboutAction = new QAction(QIcon::fromTheme("О приложении", QIcon(":/Images/About.ico")), tr("&О приложении"), this );
+    aboutAction->setStatusTip(tr("О Файловом менеджере"));
     aboutAction->setMenuRole (QAction::AboutRole);
     connect(aboutAction, SIGNAL(triggered()), this, SLOT(showAboutBox()));
 
-    aboutHelpAction = new QAction(QIcon::fromTheme("help", QIcon(":/Images/help.ico")), tr("Справка приложения"), this);
+    aboutHelpAction = new QAction(QIcon::fromTheme("Справка", QIcon(":/Images/help.ico")), tr("Справка приложения"), this);
     aboutHelpAction->setStatusTip(tr("Справка приложения"));
     aboutHelpAction->setMenuRole(QAction::AboutRole);
     connect(aboutHelpAction, SIGNAL(triggered()), this, SLOT(showHelpBox()));
@@ -411,7 +411,7 @@ void MainWindow::showAboutBox()
                        tr("<h2>FILE MANAGER</h2>"
                           "<p><em>Version 1.0</em>"
                           "<p>File Manager<br>"
-                          "Автор программы: Калоша Никита"
+                          "Автор программы: Дубновицкий Дмитрий "
                           "<p>2024</br>"));
 }
 
