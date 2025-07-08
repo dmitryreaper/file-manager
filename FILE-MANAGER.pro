@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui sql
 
 QMAKE_CXXFLAGS += -fpermissive -Wunused-parameter -Wunused-but-set-variable -Wunused-variable -Wreturn-type
 

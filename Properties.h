@@ -2,6 +2,9 @@
 #define PROPERTIES_H
 
 #include <QDialog>
+#include <QTextEdit> 
+#include <QLineEdit> 
+#include <QFileInfo> 
 
 class Properties : public QDialog
 {
@@ -16,6 +19,11 @@ public slots:
 private slots:
     void accept();
     void reject();
+
+private:
+    QTextEdit* descriptionEdit;
+    QLineEdit* tagsEdit;
+    QFileInfo currentFileInfo; 
 };
 
 #endif
