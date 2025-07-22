@@ -68,22 +68,12 @@ void Pane::doubleClickedOnEntry(QModelIndex index)
 
     QFileInfo fileInfo(mainWindow->fileSystemModel->filePath(index));
 
-    if(fileInfo.isDir())
-        moveTo(fileInfo.absoluteFilePath()/* resolves the double dot entry */);
-    else if (fileInfo.isExecutable()) {
-        QProcess *process = new QProcess(this);
-        process->startDetached(fileInfo.absoluteFilePath());
-    }
-    else {
-        QProcess *process = new QProcess(this);
-#ifdef __HAIKU__
-        process->startDetached("open \"" + fileInfo.absoluteFilePath() + "\"");
-#endif
-#ifdef Q_OS_WIN
-        process->startDetached("\"" + fileInfo.absoluteFilePath() + "\"");
-#endif
-#ifdef __linux__
-#endif
+    if(fileInfo.isDir()) {
+        moveTo(fileInfo.absoluteFilePath());
+    } else if (fileInfo.isExecutable()) {
+        QProcess::startDetached(fileInfo.absoluteFilePath(), QStringList());
+    } else {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fileInfo.absoluteFilePath()));
     }
 }
 

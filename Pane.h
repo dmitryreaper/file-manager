@@ -6,6 +6,8 @@
 #include <QListView>
 #include <QLineEdit>
 #include <QStackedWidget>
+#include <QDesktopServices>
+#include <QUrl>
 #include <QVBoxLayout>
 
 class MainWindow;
