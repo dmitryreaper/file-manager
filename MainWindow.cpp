@@ -2,6 +2,7 @@
 #include "Pane.h"
 #include "PreferencesDialog.h"
 #include "Properties.h"
+#include <QVBoxLayout>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -42,11 +43,24 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     connect(qApp, SIGNAL(focusChanged(QWidget*, QWidget*)), SLOT(focusChangedSlot(QWidget*, QWidget*)));
 
+    // Создаем виджет для размещения поля поиска и сплиттера
+    QWidget* centralWidgetContent = new QWidget(this);
+    QVBoxLayout* centralLayout = new QVBoxLayout(centralWidgetContent);
+
+    searchLineEdit = new QLineEdit(this);
+    searchLineEdit->setPlaceholderText(tr("Поиск файлов..."));
+    connect(searchLineEdit, &QLineEdit::textChanged, this, &MainWindow::onSearchTextChanged);
+
+    centralLayout->addWidget(searchLineEdit);
+    centralLayout->addWidget(splitter);
+    centralLayout->setContentsMargins(0, 0, 0, 0);
+
+    this->setCentralWidget(centralWidgetContent);
+
     splitter->addWidget(directoryTreeView);
     splitter->addWidget(leftPane);
     splitter->addWidget(rightPane);
     splitter->setHandleWidth(3);
-    this->setCentralWidget(splitter);
     connect(QApplication::clipboard(), SIGNAL(changed(QClipboard::Mode)), this, SLOT(clipboardChanged()));
     restoreState();
 }
@@ -79,7 +93,7 @@ Pane* MainWindow::getActivePane()
     return(activePane);
 }
 
-void MainWindow::treeSelectionChanged(QModelIndex current, QModelIndex previous)
+void MainWindow::treeSelectionChanged(QModelIndex current, QModelIndex /* previous */) // Изменено на /* previous */
 {
     QFileInfo fileInfo(fileSystemModel->fileInfo(fileSystemProxyModel->mapToSource(current)));
     if(!fileInfo.exists())
@@ -233,6 +247,8 @@ void MainWindow::toggleHidden()
         fileSystemModel->setFilter(QDir::NoDot | QDir::AllEntries | QDir::System | QDir::Hidden);
     else
         fileSystemModel->setFilter(QDir::NoDot | QDir::AllEntries | QDir::System);
+
+    fileSystemProxyModel->refreshFilter(); // Вызываем invalidateFilter, чтобы обновить представление после изменения фильтра
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -242,7 +258,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 }
 
 void MainWindow::createActionsAndMenus()
-{    
+{
     deleteAction = new QAction(QIcon::fromTheme("edit-delete", QIcon(":/Images/Delete.ico")), tr("Удалить"), this );
     deleteAction->setStatusTip(tr("Удалить файл"));
     deleteAction->setShortcut(QKeySequence::Delete);
@@ -359,7 +375,7 @@ void MainWindow::createActionsAndMenus()
 void MainWindow::saveState()
 {
     settings->setValue("Geometry", saveGeometry());
-    settings->setValue("Показать статус бар", statusBar()->isVisible());
+    // settings->setValue("Показать статус бар", statusBar()->isVisible()); // Закомментировано или удалено, т.к. statusBar отсутствует
     settings->setValue("ShowToolBar", toolBar->isVisible());
 
     settings->setValue("MainSplitterSizes", splitter->saveState());
@@ -373,13 +389,13 @@ void MainWindow::saveState()
     settings->setValue("RightPaneFileListHeader", rightPane->treeView->header()->saveState());
     settings->setValue("RightPaneViewMode", rightPane->stackedWidget->currentIndex());
     settings->setValue("ShowHidden", hiddenAction->isChecked());
+    settings->setValue("SearchText", searchLineEdit->text()); // Сохраняем текст поиска
 }
 
 void MainWindow::restoreState()
 {
     restoreGeometry(settings->value("Geometry").toByteArray());
     toolBar->setVisible(settings->value("ShowToolBar", QVariant(true)).toBool());
-    statusBar()->setVisible(settings->value("ShowStatusBar", QVariant(false)).toBool());
     splitter->restoreState(settings->value("MainSplitterSizes").toByteArray());
     setActivePane(settings->value("LeftPaneActive", 1).toBool() ? leftPane : rightPane);
     leftPane->treeView->header()->restoreState(settings->value("LeftPaneFileListHeader").toByteArray());
@@ -390,6 +406,7 @@ void MainWindow::restoreState()
     rightPane->stackedWidget->setCurrentIndex(settings->value("RightPaneViewMode", 0).toInt());
     hiddenAction->setChecked(settings->value("ShowHidden", false).toBool());
     toggleHidden();
+    searchLineEdit->setText(settings->value("SearchText", "").toString()); // Восстанавливаем текст поиска
 }
 
 void MainWindow::updateViewActions()
@@ -452,12 +469,58 @@ void MainWindow::showProperties()
     properties.exec();
 }
 
+// Новый слот для обработки изменения текста в поле поиска
+void MainWindow::onSearchTextChanged(const QString& text)
+{
+    fileSystemProxyModel->setSearchText(text);
+    fileSystemProxyModel->refreshFilter(); // Перезапускаем фильтрацию
+    qDebug() << "Search text changed:" << text;
+}
+
+
+void FileSystemModelFilterProxyModel::setSearchText(const QString& text)
+{
+    m_searchText = text;
+    // m_searchText = text.toLower();
+}
+
 bool FileSystemModelFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
     QModelIndex index0 = sourceModel()->index(sourceRow, 0, sourceParent);
     QFileSystemModel* fileSystemModel = qobject_cast<QFileSystemModel*>(sourceModel());
-    if (fileSystemModel->isDir(index0) && fileSystemModel->fileName(index0).compare("..") != 0)
+
+    // Базовая логика фильтрации
+    bool baseAccept = true;
+    if (fileSystemModel->isDir(index0) && fileSystemModel->fileName(index0).compare("..") == 0) {
+        baseAccept = false;
+    } else {
+        if (!(fileSystemModel->filter() & QDir::Hidden) && fileSystemModel->fileInfo(index0).isHidden()) {
+            baseAccept = false;
+        }
+    }
+
+    // Проверяем, соответствует ли текущий элемент тексту поиска
+    bool currentItemMatches = false;
+    if (!m_searchText.isEmpty()) {
+        QString fileName = fileSystemModel->fileName(index0);
+        currentItemMatches = fileName.contains(m_searchText, Qt::CaseInsensitive);
+    } else {
+        currentItemMatches = true;
+    }
+
+    if (currentItemMatches && baseAccept) {
         return true;
-    else
-        return false;
+    }
+
+    if (fileSystemModel->isDir(index0)) {
+
+        for (int i = 0; i < fileSystemModel->rowCount(index0); ++i) {
+            // Рекурсивный вызов для дочерних элементов
+            if (filterAcceptsRow(i, index0)) {
+                return true; // принимаем эту директорию
+            }
+        }
+    }
+
+    return false;
 }

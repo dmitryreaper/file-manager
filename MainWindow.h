@@ -18,6 +18,7 @@
 #include <QCloseEvent>
 #include <QProcess>
 #include <QDebug>
+#include <QLineEdit>
 
 class Pane;
 class PreviewPane;
@@ -29,10 +30,10 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget* parent = 0);
-//    ~MainWindow();
+    //    ~MainWindow();
     QFileSystemModel* fileSystemModel;
     QTreeView* directoryTreeView;
-    QSortFilterProxyModel* fileSystemProxyModel;
+    class FileSystemModelFilterProxyModel* fileSystemProxyModel;
     QMenu* contextMenu;
     QToolBar* toolBar;
     Pane* leftPane;
@@ -54,7 +55,7 @@ signals:
 
 private:
     QMenuBar* menuBar;
-//    QStatusBar* statusBar;
+    //    QStatusBar* statusBar;
 
     QMenu* fileMenu;
     QMenu* editMenu;
@@ -79,6 +80,9 @@ private:
     QItemSelectionModel* treeSelectionModel;
     QSettings* settings;
 
+    // Добавьте поле ввода для поиска
+    QLineEdit* searchLineEdit;
+
     void createActionsAndMenus();
     void saveState();
     void restoreState();
@@ -100,12 +104,24 @@ private slots:
     void toggleHidden();
     void showContextMenu(const QPoint&);
     void showProperties();
+    void onSearchTextChanged(const QString& text);
 };
 
 class FileSystemModelFilterProxyModel : public QSortFilterProxyModel
 {
+    Q_OBJECT
+
+public:
+    void setSearchText(const QString& text); // Новый метод для установки текста поиска
+    // invalidate() теперь публичный
+    void refreshFilter() {
+        invalidateFilter();
+    }
 protected:
     virtual bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const;
+
+private:
+    QString m_searchText;
 };
 
-#endif // MAINWINDOW_H
+#endif
