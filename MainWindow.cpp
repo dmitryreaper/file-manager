@@ -3,6 +3,7 @@
 #include "PreferencesDialog.h"
 #include "Properties.h"
 #include <QVBoxLayout>
+#include <QActionGroup>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -192,9 +193,7 @@ void MainWindow::del()
                 {
                     if(confirm)
                     {
-                        int answer = QMessageBox::information(this, tr("Удалить файл"), "Вы точно хотите удалить файл <p><b>\"" + file.filePath() + "</b>?",QMessageBox::Yes | QMessageBox::No | QMessageBox::YesToAll);
-                        if(answer == QMessageBox::YesToAll)
-                            yesToAll = true;
+                        int answer = QMessageBox::information(this, tr("Удалить файл"), "Вы точно хотите удалить файл ?",QMessageBox::Yes | QMessageBox::No);
                         if(answer == QMessageBox::No)
                             return;
                     }
