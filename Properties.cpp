@@ -22,7 +22,7 @@ Properties::Properties(QWidget *parent) : QDialog(parent)
 
     QVBoxLayout* layout = new QVBoxLayout(this);
     QFormLayout* formLayout = new QFormLayout();
-    formLayout->setMargin(5);
+    formLayout->setContentsMargins(10, 10, 10, 10);
 
     MainWindow* mainWindow(static_cast<MainWindow*>(parent));
     QWidget* focus(mainWindow->focusWidget());
